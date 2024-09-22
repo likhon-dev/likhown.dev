@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,16 +10,23 @@
   <!-- Open Graph tags -->
   <meta property="og:title" content="Likhon Sheikh - Full-stack Developer">
   <meta property="og:description" content="Connect with Likhon Sheikh, a skilled full-stack developer specializing in React, Redux, Node.js, PHP, C#, and ASP.NET.">
-  <meta property="og:image" content="https://likhowndev.github.io/likhown.dev/og-image.jpg">
-  <meta property="og:url" content="https://likhowndev.github.io/likhown.dev/">
+  <meta property="og:image" content="https://likhown-dev.vercel.app/og-image.jpg">
+  <meta property="og:url" content="https://likhown-dev.vercel.app/">
   <meta property="og:type" content="website">
 
   <!-- Twitter Card tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:creator" content="@likhondotxyz">
 
+  <!-- Preload critical resources -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" as="style">
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
+  
+  <!-- Load fonts and icons -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Inline styles for fast rendering -->
   <style>
     :root {
       --primary-color: #6c5ce7;
@@ -315,7 +321,7 @@
     <p>Developed by Likhon Sheikh | <a href="mailto:me@likhown.dev" style="color: white;">me@likhown.dev</a></p>
   </footer>
   <script>
-    document.addEventListener('DOMContentLoaded', (event) => {
+    document.addEventListener('DOMContentLoaded', () => {
       const tabs = document.querySelectorAll('.nav-tab');
       const contentSections = document.querySelectorAll('.content-section');
 
@@ -329,33 +335,13 @@
         });
       });
 
-      const cards = document.querySelectorAll('.card');
-      cards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-          card.style.transform = 'translateY(-10px) scale(1.05)';
-        });
-        card.addEventListener('mouseleave', () => {
-          card.style.transform = 'translateY(0) scale(1)';
-        });
-      });
-
-      const skills = document.querySelectorAll('.skill-tag');
-      skills.forEach(skill => {
-        skill.addEventListener('mouseenter', () => {
-          skill.style.transform = 'scale(1.1) rotate(5deg)';
-        });
-        skill.addEventListener('mouseleave', () => {
-          skill.style.transform = 'scale(1) rotate(0)';
-        });
-      });
-
-      // Fetch repositories
+      // Fetch repositories and load them into the project section
       fetch('https://api.github.com/orgs/likhowndev/repos')
         .then(response => response.json())
-        .then(data => {
+        .then(repos => {
           const reposContainer = document.getElementById('repos');
-          reposContainer.innerHTML = ''; // Clear loading message
-          data.forEach(repo => {
+          reposContainer.innerHTML = ''; // Clear the loading message
+          repos.forEach(repo => {
             const repoCard = document.createElement('div');
             repoCard.className = 'repo-card';
             repoCard.innerHTML = `
@@ -366,4 +352,11 @@
             reposContainer.appendChild(repoCard);
           });
         })
-        .catch
+        .catch(error => {
+          const reposContainer = document.getElementById('repos');
+          reposContainer.innerHTML = '<p class="loading">Failed to load repositories. Please try again later.</p>';
+        });
+    });
+  </script>
+</body>
+</html>
