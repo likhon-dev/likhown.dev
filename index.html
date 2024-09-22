@@ -1,1 +1,369 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Likhon Sheikh's personal website, full-stack developer specializing in React, Redux, Node.js, PHP, and more.">
+  <meta name="author" content="Likhon Sheikh">
+  <title>Likhon Sheikh - Full-stack Developer</title>
+  
+  <!-- Open Graph tags -->
+  <meta property="og:title" content="Likhon Sheikh - Full-stack Developer">
+  <meta property="og:description" content="Connect with Likhon Sheikh, a skilled full-stack developer specializing in React, Redux, Node.js, PHP, C#, and ASP.NET.">
+  <meta property="og:image" content="https://likhowndev.github.io/likhown.dev/og-image.jpg">
+  <meta property="og:url" content="https://likhowndev.github.io/likhown.dev/">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:creator" content="@likhondotxyz">
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #6c5ce7;
+      --secondary-color: #00cec9;
+      --accent-color: #fd79a8;
+      --text-color: #ffffff;
+      --bg-color: #1e272e;
+      --card-bg: #2d3436;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      padding: 60px 20px;
+      text-align: center;
+      clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+    }
+    h1 {
+      margin: 0;
+      font-size: 3rem;
+      font-weight: 700;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      margin-top: 30px;
+      background-color: rgba(255,255,255,0.1);
+      border-radius: 30px;
+      padding: 10px;
+    }
+    .nav-tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+    }
+    .nav-tab.active {
+      background-color: var(--accent-color);
+    }
+    .content-section {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .content-section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .links, .repos {
+      margin-top: 50px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+    .card a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: var(--text-color);
+    }
+    .card i {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: var(--secondary-color);
+    }
+    footer {
+      margin-top: 60px;
+      text-align: center;
+      padding: 40px 20px;
+      background-color: var(--card-bg);
+      clip-path: polygon(0 15%, 100% 0, 100% 100%, 0 100%);
+    }
+    .cta {
+      font-size: 1.2rem;
+      margin-top: 40px;
+      background-color: var(--accent-color);
+      color: var(--text-color);
+      padding: 15px 30px;
+      text-align: center;
+      display: inline-block;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .cta:hover {
+      background-color: #e84393;
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .section-title {
+      font-size: 2.2rem;
+      color: var(--secondary-color);
+      margin-top: 60px;
+      margin-bottom: 30px;
+      text-align: center;
+      position: relative;
+    }
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 50px;
+      height: 4px;
+      background-color: var(--accent-color);
+      margin: 10px auto 0;
+    }
+    .skills {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    .skill-tag {
+      background-color: var(--primary-color);
+      color: var(--text-color);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    .skill-tag:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    }
+    .repo-card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .repo-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+    .repo-card h3 {
+      color: var(--secondary-color);
+    }
+    .repo-card p {
+      color: var(--text-color);
+    }
+    .repo-card a {
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+    .repo-card a:hover {
+      text-decoration: underline;
+    }
+    .loading {
+      text-align: center;
+      font-size: 1.5rem;
+      color: var(--secondary-color);
+    }
+    @media (max-width: 768px) {
+      .links, .repos {
+        grid-template-columns: 1fr;
+      }
+      .nav-tabs {
+        flex-direction: column;
+        align-items: center;
+      }
+      .nav-tab {
+        margin-bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Likhon Sheikh</h1>
+    <p>Full-stack Developer</p>
+    <div class="nav-tabs">
+      <div class="nav-tab active" data-tab="home">Home</div>
+      <div class="nav-tab" data-tab="projects">Projects</div>
+      <div class="nav-tab" data-tab="connect">Connect</div>
+    </div>
+  </header>
+  <div class="container">
+    <div id="home" class="content-section active">
+      <div class="skills">
+        <span class="skill-tag">React</span>
+        <span class="skill-tag">Redux</span>
+        <span class="skill-tag">Node.js</span>
+        <span class="skill-tag">PHP</span>
+        <span class="skill-tag">C#</span>
+        <span class="skill-tag">ASP.NET</span>
+      </div>
+      <h2 class="section-title">About Me</h2>
+      <p>I'm a passionate full-stack developer with expertise in modern web technologies. I love creating efficient, scalable, and user-friendly applications that solve real-world problems.</p>
+      <div style="text-align: center; margin-top: 60px;">
+        <a href="mailto:me@likhown.dev" class="cta">Get in Touch</a>
+      </div>
+    </div>
+    <div id="projects" class="content-section">
+      <h2 class="section-title">My Projects</h2>
+      <div id="repos" class="repos">
+        <p class="loading">Loading repositories...</p>
+      </div>
+    </div>
+    <div id="connect" class="content-section">
+      <h2 class="section-title">Connect with Me</h2>
+      <div class="links">
+        <div class="card">
+          <a href="https://likhown.dev" target="_blank">
+            <i class="fas fa-globe"></i>
+            <span>Main Website</span>
+          </a>
+        </div>
+        <div class="card">
+          <a href="https://likhonsheikh.com" target="_blank">
+            <i class="fas fa-briefcase"></i>
+            <span>Portfolio</span>
+          </a>
+        </div>
+        <div class="card">
+          <a href="https://t.me/likhondotxyz" target="_blank">
+            <i class="fab fa-telegram"></i>
+            <span>Telegram Channel</span>
+          </a>
+        </div>
+        <div class="card">
+          <a href="https://t.me/RexxCheat" target="_blank">
+            <i class="fab fa-telegram"></i>
+            <span>RexxCheat on Telegram</span>
+          </a>
+        </div>
+        <div class="card">
+          <a href="https://twitter.com/likhondotxyz" target="_blank">
+            <i class="fab fa-twitter"></i>
+            <span>Twitter</span>
+          </a>
+        </div>
+        <div class="card">
+          <a href="https://t.me/likhositoriesbot/donations" target="_blank">
+            <i class="fas fa-donate"></i>
+            <span>Make a Donation</span>
+          </a>
+        </div>
+      </div>
+      <h2 class="section-title">Join My Teams</h2>
+      <div class="links">
+        <div class="card">
+          <a href="https://t.me/ProfitableRewards" target="_blank">
+            <i class="fas fa-rocket"></i>
+            <span>Profitable Rewards Team</span>
+          </a>
+        </div>
+        <div class="card">
+          <a href="https://t.me/+K9Hqif37Fqg4ZTZl" target="_blank">
+            <i class="fas fa-users"></i>
+            <span>Team 1</span>
+          </a>
+        </div>
+        <div class="card">
+          <a href="https://t.me/+3UYeqxRKUi8zZjg9" target="_blank">
+            <i class="fas fa-users"></i>
+            <span>Team 2</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>Developed by Likhon Sheikh | <a href="mailto:me@likhown.dev" style="color: white;">me@likhown.dev</a></p>
+  </footer>
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+      const tabs = document.querySelectorAll('.nav-tab');
+      const contentSections = document.querySelectorAll('.content-section');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabId = tab.getAttribute('data-tab');
+          tabs.forEach(t => t.classList.remove('active'));
+          contentSections.forEach(cs => cs.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          card.style.transform = 'translateY(-10px) scale(1.05)';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'translateY(0) scale(1)';
+        });
+      });
+
+      const skills = document.querySelectorAll('.skill-tag');
+      skills.forEach(skill => {
+        skill.addEventListener('mouseenter', () => {
+          skill.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+        skill.addEventListener('mouseleave', () => {
+          skill.style.transform = 'scale(1) rotate(0)';
+        });
+      });
+
+      // Fetch repositories
+      fetch('https://api.github.com/orgs/likhowndev/repos')
+        .then(response => response.json())
+        .then(data => {
+          const reposContainer = document.getElementById('repos');
+          reposContainer.innerHTML = ''; // Clear loading message
+          data.forEach(repo => {
+            const repoCard = document.createElement('div');
+            repoCard.className = 'repo-card';
+            repoCard.innerHTML = `
+              <h3>${repo.name}</h3>
+              <p>${repo.description || 'No description available.'}</p>
+              <a href="${repo.html_url}" target="_blank">View on GitHub</a>
+            `;
+            reposContainer.appendChild(repoCard);
+          });
+        })
+        .catch
