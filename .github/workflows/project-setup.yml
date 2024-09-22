@@ -9,24 +9,25 @@ on:
 jobs:
   setup-project:
     runs-on: ubuntu-latest
+
     steps:
+    # Checkout the repository to get access to the code
     - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        persist-credentials: true
-        token: ${{ secrets.GITHUB_TOKEN }}  # Ensure the token is available for git push
 
+    # Set up Node.js environment
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '20'  # Updated from '16' to '20' to avoid deprecation warning
+        node-version: '20' # Updated to Node.js 20 for compatibility
 
+    # Create directory structure and project files
     - name: Create project structure
       run: |
-        # Create directories
+        # Create backend and frontend structure
         mkdir -p src/{api/{controllers,models,routes},utils,config,middleware} public/{css,js,images} tests/{unit,integration} docs
 
-        # Create backend files
+        # Backend files: server.js, user routes, controller, and middleware
         echo "const express = require('express');
         const cors = require('cors');
         const helmet = require('helmet');
@@ -51,6 +52,7 @@ jobs:
         const PORT = process.env.PORT || config.port;
         app.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));" > src/server.js
 
+        # Database configuration file
         echo "const mongoose = require('mongoose');
         const config = require('../config');
 
@@ -60,6 +62,7 @@ jobs:
 
         module.exports = mongoose;" > src/api/models/db.js
 
+        # User Routes
         echo "const express = require('express');
         const userController = require('../controllers/userController');
         const authMiddleware = require('../../middleware/authMiddleware');
@@ -74,6 +77,7 @@ jobs:
 
         module.exports = router;" > src/api/routes/userRoutes.js
 
+        # User Controller
         echo "const User = require('../models/userModel');
         const { validateUser } = require('../../utils/validators');
 
@@ -132,6 +136,7 @@ jobs:
           }
         };" > src/api/controllers/userController.js
 
+        # User Model
         echo "const mongoose = require('mongoose');
         const bcrypt = require('bcrypt');
 
@@ -158,6 +163,7 @@ jobs:
 
         module.exports = User;" > src/api/models/userModel.js
 
+        # Auth Middleware
         echo "const jwt = require('jsonwebtoken');
         const config = require('../config');
 
@@ -174,6 +180,7 @@ jobs:
           }
         };" > src/middleware/authMiddleware.js
 
+        # Validators using Joi
         echo "const Joi = require('joi');
 
         exports.validateUser = (user) => {
@@ -187,6 +194,7 @@ jobs:
           return schema.validate(user);
         };" > src/utils/validators.js
 
+        # Config file
         echo "module.exports = {
           port: process.env.PORT || 3000,
           dbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/myapp',
@@ -208,77 +216,19 @@ jobs:
         </body>
         </html>" > public/index.html
 
-        echo "/* Reset and base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
+        # Simple CSS for frontend
+        echo "body {
             font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333;
             background-color: #f4f4f4;
+            color: #333;
         }
 
-        .container {
-            width: 80%;
-            margin: auto;
-            overflow: hidden;
-            padding: 0 20px;
-        }
+        #root {
+            text-align: center;
+            padding: 50px;
+        }" > public/css/styles.css
 
-        header {
-            background: #333;
-            color: #fff;
-            padding-top: 30px;
-            min-height: 70px;
-            border-bottom: #0779e4 3px solid;
-        }
-
-        header a {
-            color: #fff;
-            text-decoration: none;
-            text-transform: uppercase;
-            font-size: 16px;
-        }
-
-        header ul {
-            padding: 0;
-            list-style: none;
-        }
-
-        header li {
-            display: inline;
-            padding: 0 20px 0 20px;
-        }
-
-        header #branding {
-            float: left;
-        }
-
-        header #branding h1 {
-            margin: 0;
-        }
-
-        header nav {
-            float: right;
-            margin-top: 10px;
-        }
-
-        header .highlight, header .current a {
-            color: #0779e4;
-            font-weight: bold;
-        }
-
-        header a:hover {
-            color: #ffffff;
-            font-weight: bold;
-        }
-
-        /* Add more styles as needed */" > public/css/styles.css
-
+        # Basic Vue.js setup
         echo "import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
 
         const app = createApp({
@@ -291,7 +241,7 @@ jobs:
 
         app.mount('#root')" > public/js/app.js
 
-        # Create test files
+        # Test file
         echo "const assert = require('assert');
         const { validateUser } = require('../../src/utils/validators');
 
@@ -315,11 +265,9 @@ jobs:
             const { error } = validateUser(user);
             assert.notStrictEqual(error, undefined);
           });
-
-          // Add more test cases
         });" > tests/unit/userValidation.test.js
 
-        # Create documentation
+        # API Documentation
         echo "# API Documentation
 
         ## Users
@@ -348,96 +296,22 @@ jobs:
         ### Delete user
         - Method: DELETE
         - Endpoint: /api/users/:id
-        - Headers: x-auth-token (JWT token)
+        - Headers: x-auth-token (JWT token)" > docs/API.md
 
-        ## More endpoints to be added..." > docs/API.md
-
-        # Create README.md in root directory
-        echo "# Likhon Sheikh - Full-stack Developer Portfolio
-
-        This project showcases my skills as a full-stack developer, featuring a modern web application built with Node.js, Express, MongoDB, and Vue.js.
-
-        ## Features
-
-        - RESTful API with Express
-        - MongoDB integration with Mongoose
-        - User authentication and authorization
-        - Frontend built with Vue.js
-        - Comprehensive test suite
-        - Detailed API documentation
-
-        ## Getting Started
-
-        1. Clone the repository
-        2. Install dependencies: \`npm install\`
-        3. Set up environment variables (see \`.env.example\`)
-        4. Run the server: \`npm start\`
-        5. Visit \`http://localhost:3000\` in your browser
-
-        ## Testing
-
-        Run tests with: \`npm test\`
-
-        ## API Documentation
-
-        See \`docs/API.md\` for detailed API documentation.
-
-        ## License
-
-        This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details." > README.md
-
-    - name: Set up project dependencies
+    # Install project dependencies
+    - name: Install dependencies
       run: |
         npm init -y
         npm install express mongoose bcrypt jsonwebtoken joi helmet cors morgan
         npm install --save-dev nodemon jest supertest
 
-    - name: Update package.json
-      run: |
-        cat <<EOF > package.json
-        {
-          "name": "likhon-sheikh-portfolio",
-          "version": "1.0.0",
-          "description": "Full-stack developer portfolio",
-          "main": "src/server.js",
-          "scripts": {
-            "start": "node src/server.js",
-            "dev": "nodemon src/server.js",
-            "test": "jest --detectOpenHandles"
-          },
-          "keywords": ["portfolio", "full-stack", "node", "express", "mongodb", "vue"],
-          "author": "Likhon Sheikh",
-          "license": "Apache-2.0",
-          "dependencies": {
-            "express": "^4.17.1",
-            "mongoose": "^5.12.3",
-            "bcrypt": "^5.0.1",
-            "jsonwebtoken": "^8.5.1",
-            "joi": "^17.4.0",
-            "helmet": "^4.6.0",
-            "cors": "^2.8.5",
-            "morgan": "^1.10.0"
-          },
-          "devDependencies": {
-            "nodemon": "^2.0.7",
-            "jest": "^27.0.6",
-            "supertest": "^6.1.3"
-          }
-        }
-        EOF
-
+    # Add and commit changes to the repository
     - name: Commit changes
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
         git add .
-
-        # Check if there are changes before committing
-        if git diff-index --quiet HEAD --; then
-          echo "No changes to commit"
-        else
-          git commit -m "Create advanced project structure with sample files"
-          git push origin HEAD:${{ github.ref }}
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+        # Only commit if there are changes
+        git diff --quiet || git commit -m "Set up project structure with sample files"
+        git push origin HEAD:${{ github.ref }}
