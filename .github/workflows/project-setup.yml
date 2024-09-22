@@ -11,307 +11,307 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository to get access to the code
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      # Checkout the repository to get access to the code
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    # Set up Node.js environment
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20' # Updated to Node.js 20 for compatibility
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'  # Updated to Node.js 20 for compatibility
 
-    # Create directory structure and project files
-    - name: Create project structure
-      run: |
-        # Create backend and frontend structure
-        mkdir -p src/{api/{controllers,models,routes},utils,config,middleware} public/{css,js,images} tests/{unit,integration} docs
+      # Create directory structure and project files
+      - name: Create project structure
+        run: |
+          # Create backend and frontend structure
+          mkdir -p src/{api/{controllers,models,routes},utils,config,middleware} public/{css,js,images} tests/{unit,integration} docs
 
-        # Backend files: server.js, user routes, controller, and middleware
-        echo "const express = require('express');
-        const cors = require('cors');
-        const helmet = require('helmet');
-        const morgan = require('morgan');
-        const config = require('./config');
-        const apiRoutes = require('./api/routes');
+          # Backend files: server.js, user routes, controller, and middleware
+          echo "const express = require('express');
+          const cors = require('cors');
+          const helmet = require('helmet');
+          const morgan = require('morgan');
+          const config = require('./config');
+          const apiRoutes = require('./api/routes');
 
-        const app = express();
+          const app = express();
 
-        app.use(helmet());
-        app.use(cors());
-        app.use(morgan('combined'));
-        app.use(express.json());
+          app.use(helmet());
+          app.use(cors());
+          app.use(morgan('combined'));
+          app.use(express.json());
 
-        app.use('/api', apiRoutes);
+          app.use('/api', apiRoutes);
 
-        app.use((err, req, res, next) => {
-          console.error(err.stack);
-          res.status(500).send('Something broke!');
-        });
-
-        const PORT = process.env.PORT || config.port;
-        app.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));" > src/server.js
-
-        # Database configuration file
-        echo "const mongoose = require('mongoose');
-        const config = require('../config');
-
-        mongoose.connect(config.dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
-          .then(() => console.log('Connected to MongoDB'))
-          .catch(err => console.error('Could not connect to MongoDB', err));
-
-        module.exports = mongoose;" > src/api/models/db.js
-
-        # User Routes
-        echo "const express = require('express');
-        const userController = require('../controllers/userController');
-        const authMiddleware = require('../../middleware/authMiddleware');
-
-        const router = express.Router();
-
-        router.post('/users', userController.createUser);
-        router.get('/users', authMiddleware, userController.getUsers);
-        router.get('/users/:id', authMiddleware, userController.getUserById);
-        router.put('/users/:id', authMiddleware, userController.updateUser);
-        router.delete('/users/:id', authMiddleware, userController.deleteUser);
-
-        module.exports = router;" > src/api/routes/userRoutes.js
-
-        # User Controller
-        echo "const User = require('../models/userModel');
-        const { validateUser } = require('../../utils/validators');
-
-        exports.createUser = async (req, res) => {
-          try {
-            const { error } = validateUser(req.body);
-            if (error) return res.status(400).send(error.details[0].message);
-
-            let user = new User(req.body);
-            user = await user.save();
-            res.status(201).send(user);
-          } catch (error) {
-            res.status(500).send('Server error');
-          }
-        };
-
-        exports.getUsers = async (req, res) => {
-          try {
-            const users = await User.find();
-            res.send(users);
-          } catch (error) {
-            res.status(500).send('Server error');
-          }
-        };
-
-        exports.getUserById = async (req, res) => {
-          try {
-            const user = await User.findById(req.params.id);
-            if (!user) return res.status(404).send('User not found');
-            res.send(user);
-          } catch (error) {
-            res.status(500).send('Server error');
-          }
-        };
-
-        exports.updateUser = async (req, res) => {
-          try {
-            const { error } = validateUser(req.body);
-            if (error) return res.status(400).send(error.details[0].message);
-
-            const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-            if (!user) return res.status(404).send('User not found');
-            res.send(user);
-          } catch (error) {
-            res.status(500).send('Server error');
-          }
-        };
-
-        exports.deleteUser = async (req, res) => {
-          try {
-            const user = await User.findByIdAndRemove(req.params.id);
-            if (!user) return res.status(404).send('User not found');
-            res.send(user);
-          } catch (error) {
-            res.status(500).send('Server error');
-          }
-        };" > src/api/controllers/userController.js
-
-        # User Model
-        echo "const mongoose = require('mongoose');
-        const bcrypt = require('bcrypt');
-
-        const userSchema = new mongoose.Schema({
-          name: { type: String, required: true, minlength: 3, maxlength: 50 },
-          email: { type: String, required: true, unique: true, minlength: 5, maxlength: 255 },
-          password: { type: String, required: true, minlength: 5, maxlength: 1024 },
-          isAdmin: Boolean
-        });
-
-        userSchema.pre('save', async function(next) {
-          if (this.isModified('password')) {
-            const salt = await bcrypt.genSalt(10);
-            this.password = await bcrypt.hash(this.password, salt);
-          }
-          next();
-        });
-
-        userSchema.methods.comparePassword = async function(candidatePassword) {
-          return bcrypt.compare(candidatePassword, this.password);
-        };
-
-        const User = mongoose.model('User', userSchema);
-
-        module.exports = User;" > src/api/models/userModel.js
-
-        # Auth Middleware
-        echo "const jwt = require('jsonwebtoken');
-        const config = require('../config');
-
-        module.exports = function (req, res, next) {
-          const token = req.header('x-auth-token');
-          if (!token) return res.status(401).send('Access denied. No token provided.');
-
-          try {
-            const decoded = jwt.verify(token, config.jwtSecret);
-            req.user = decoded;
-            next();
-          } catch (ex) {
-            res.status(400).send('Invalid token.');
-          }
-        };" > src/middleware/authMiddleware.js
-
-        # Validators using Joi
-        echo "const Joi = require('joi');
-
-        exports.validateUser = (user) => {
-          const schema = Joi.object({
-            name: Joi.string().min(3).max(50).required(),
-            email: Joi.string().min(5).max(255).required().email(),
-            password: Joi.string().min(5).max(255).required(),
-            isAdmin: Joi.boolean()
+          app.use((err, req, res, next) => {
+            console.error(err.stack);
+            res.status(500).send('Something broke!');
           });
 
-          return schema.validate(user);
-        };" > src/utils/validators.js
+          const PORT = process.env.PORT || config.port;
+          app.listen(PORT, () => console.log(`Server running on port ${PORT}`));" > src/server.js
 
-        # Config file
-        echo "module.exports = {
-          port: process.env.PORT || 3000,
-          dbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/myapp',
-          jwtSecret: process.env.JWT_SECRET || 'your_jwt_secret'
-        };" > src/config/index.js
+          # Database configuration file
+          echo "const mongoose = require('mongoose');
+          const config = require('../config');
 
-        # Create frontend files
-        echo "<!DOCTYPE html>
-        <html lang=\"en\">
-        <head>
-            <meta charset=\"UTF-8\">
-            <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-            <title>Likhon Sheikh - Full-stack Developer</title>
-            <link rel=\"stylesheet\" href=\"css/styles.css\">
-        </head>
-        <body>
-            <div id=\"root\"></div>
-            <script src=\"js/app.js\" type=\"module\"></script>
-        </body>
-        </html>" > public/index.html
+          mongoose.connect(config.dbUri, { useNewUrlParser: true, useUnifiedTopology: true })
+            .then(() => console.log('Connected to MongoDB'))
+            .catch(err => console.error('Could not connect to MongoDB', err));
 
-        # Simple CSS for frontend
-        echo "body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            color: #333;
-        }
+          module.exports = mongoose;" > src/api/models/db.js
 
-        #root {
-            text-align: center;
-            padding: 50px;
-        }" > public/css/styles.css
+          # User Routes
+          echo "const express = require('express');
+          const userController = require('../controllers/userController');
+          const authMiddleware = require('../../middleware/authMiddleware');
 
-        # Basic Vue.js setup
-        echo "import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
+          const router = express.Router();
 
-        const app = createApp({
-          data() {
-            return {
-              message: 'Welcome to Likhon Sheikh\'s Portfolio'
+          router.post('/users', userController.createUser);
+          router.get('/users', authMiddleware, userController.getUsers);
+          router.get('/users/:id', authMiddleware, userController.getUserById);
+          router.put('/users/:id', authMiddleware, userController.updateUser);
+          router.delete('/users/:id', authMiddleware, userController.deleteUser);
+
+          module.exports = router;" > src/api/routes/userRoutes.js
+
+          # User Controller
+          echo "const User = require('../models/userModel');
+          const { validateUser } = require('../../utils/validators');
+
+          exports.createUser = async (req, res) => {
+            try {
+              const { error } = validateUser(req.body);
+              if (error) return res.status(400).send(error.details[0].message);
+
+              let user = new User(req.body);
+              user = await user.save();
+              res.status(201).send(user);
+            } catch (error) {
+              res.status(500).send('Server error');
             }
+          };
+
+          exports.getUsers = async (req, res) => {
+            try {
+              const users = await User.find();
+              res.send(users);
+            } catch (error) {
+              res.status(500).send('Server error');
+            }
+          };
+
+          exports.getUserById = async (req, res) => {
+            try {
+              const user = await User.findById(req.params.id);
+              if (!user) return res.status(404).send('User not found');
+              res.send(user);
+            } catch (error) {
+              res.status(500).send('Server error');
+            }
+          };
+
+          exports.updateUser = async (req, res) => {
+            try {
+              const { error } = validateUser(req.body);
+              if (error) return res.status(400).send(error.details[0].message);
+
+              const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+              if (!user) return res.status(404).send('User not found');
+              res.send(user);
+            } catch (error) {
+              res.status(500).send('Server error');
+            }
+          };
+
+          exports.deleteUser = async (req, res) => {
+            try {
+              const user = await User.findByIdAndRemove(req.params.id);
+              if (!user) return res.status(404).send('User not found');
+              res.send(user);
+            } catch (error) {
+              res.status(500).send('Server error');
+            }
+          };" > src/api/controllers/userController.js
+
+          # User Model
+          echo "const mongoose = require('mongoose');
+          const bcrypt = require('bcrypt');
+
+          const userSchema = new mongoose.Schema({
+            name: { type: String, required: true, minlength: 3, maxlength: 50 },
+            email: { type: String, required: true, unique: true, minlength: 5, maxlength: 255 },
+            password: { type: String, required: true, minlength: 5, maxlength: 1024 },
+            isAdmin: Boolean
+          });
+
+          userSchema.pre('save', async function(next) {
+            if (this.isModified('password')) {
+              const salt = await bcrypt.genSalt(10);
+              this.password = await bcrypt.hash(this.password, salt);
+            }
+            next();
+          });
+
+          userSchema.methods.comparePassword = async function(candidatePassword) {
+            return bcrypt.compare(candidatePassword, this.password);
+          };
+
+          const User = mongoose.model('User', userSchema);
+
+          module.exports = User;" > src/api/models/userModel.js
+
+          # Auth Middleware
+          echo "const jwt = require('jsonwebtoken');
+          const config = require('../config');
+
+          module.exports = function (req, res, next) {
+            const token = req.header('x-auth-token');
+            if (!token) return res.status(401).send('Access denied. No token provided.');
+
+            try {
+              const decoded = jwt.verify(token, config.jwtSecret);
+              req.user = decoded;
+              next();
+            } catch (ex) {
+              res.status(400).send('Invalid token.');
+            }
+          };" > src/middleware/authMiddleware.js
+
+          # Validators using Joi
+          echo "const Joi = require('joi');
+
+          exports.validateUser = (user) => {
+            const schema = Joi.object({
+              name: Joi.string().min(3).max(50).required(),
+              email: Joi.string().min(5).max(255).required().email(),
+              password: Joi.string().min(5).max(255).required(),
+              isAdmin: Joi.boolean()
+            });
+
+            return schema.validate(user);
+          };" > src/utils/validators.js
+
+          # Config file
+          echo "module.exports = {
+            port: process.env.PORT || 3000,
+            dbUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/myapp',
+            jwtSecret: process.env.JWT_SECRET || 'your_jwt_secret'
+          };" > src/config/index.js
+
+          # Create frontend files
+          echo "<!DOCTYPE html>
+          <html lang=\"en\">
+          <head>
+              <meta charset=\"UTF-8\">
+              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+              <title>Likhon Sheikh - Full-stack Developer</title>
+              <link rel=\"stylesheet\" href=\"css/styles.css\">
+          </head>
+          <body>
+              <div id=\"root\"></div>
+              <script src=\"js/app.js\" type=\"module\"></script>
+          </body>
+          </html>" > public/index.html
+
+          # Simple CSS for frontend
+          echo "body {
+              font-family: 'Arial', sans-serif;
+              background-color: #f4f4f4;
+              color: #333;
           }
-        })
 
-        app.mount('#root')" > public/js/app.js
+          #root {
+              text-align: center;
+              padding: 50px;
+          }" > public/css/styles.css
 
-        # Test file
-        echo "const assert = require('assert');
-        const { validateUser } = require('../../src/utils/validators');
+          # Basic Vue.js setup
+          echo "import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
 
-        describe('User Validation', () => {
-          it('should validate a correct user object', () => {
-            const user = {
-              name: 'John Doe',
-              email: 'john@example.com',
-              password: 'password123'
-            };
-            const { error } = validateUser(user);
-            assert.strictEqual(error, undefined);
-          });
+          const app = createApp({
+            data() {
+              return {
+                message: 'Welcome to Likhon Sheikh\'s Portfolio'
+              }
+            }
+          })
 
-          it('should invalidate a user with short name', () => {
-            const user = {
-              name: 'Jo',
-              email: 'john@example.com',
-              password: 'password123'
-            };
-            const { error } = validateUser(user);
-            assert.notStrictEqual(error, undefined);
-          });
-        });" > tests/unit/userValidation.test.js
+          app.mount('#root')" > public/js/app.js
 
-        # API Documentation
-        echo "# API Documentation
+          # Test file
+          echo "const assert = require('assert');
+          const { validateUser } = require('../../src/utils/validators');
 
-        ## Users
+          describe('User Validation', () => {
+            it('should validate a correct user object', () => {
+              const user = {
+                name: 'John Doe',
+                email: 'john@example.com',
+                password: 'password123'
+              };
+              const { error } = validateUser(user);
+              assert.strictEqual(error, undefined);
+            });
 
-        ### Get all users
-        - Method: GET
-        - Endpoint: /api/users
-        - Headers: x-auth-token (JWT token)
+            it('should invalidate a user with short name', () => {
+              const user = {
+                name: 'Jo',
+                email: 'john@example.com',
+                password: 'password123'
+              };
+              const { error } = validateUser(user);
+              assert.notStrictEqual(error, undefined);
+            });
+          });" > tests/unit/userValidation.test.js
 
-        ### Get user by ID
-        - Method: GET
-        - Endpoint: /api/users/:id
-        - Headers: x-auth-token (JWT token)
+          # API Documentation
+          echo "# API Documentation
 
-        ### Create user
-        - Method: POST
-        - Endpoint: /api/users
-        - Body: { name, email, password }
+          ## Users
 
-        ### Update user
-        - Method: PUT
-        - Endpoint: /api/users/:id
-        - Headers: x-auth-token (JWT token)
-        - Body: { name, email, password }
+          ### Get all users
+          - Method: GET
+          - Endpoint: /api/users
+          - Headers: x-auth-token (JWT token)
 
-        ### Delete user
-        - Method: DELETE
-        - Endpoint: /api/users/:id
-        - Headers: x-auth-token (JWT token)" > docs/API.md
+          ### Get user by ID
+          - Method: GET
+          - Endpoint: /api/users/:id
+          - Headers: x-auth-token (JWT token)
 
-    # Install project dependencies
-    - name: Install dependencies
-      run: |
-        npm init -y
-        npm install express mongoose bcrypt jsonwebtoken joi helmet cors morgan
-        npm install --save-dev nodemon jest supertest
+          ### Create user
+          - Method: POST
+          - Endpoint: /api/users
+          - Body: { name, email, password }
 
-    # Add and commit changes to the repository
-    - name: Commit changes
-      run: |
-        git config --local user.email "actions@github.com"
-        git config --local user.name "GitHub Actions"
-        git add .
-        
-        # Only commit if there are changes
-        git diff --quiet || git commit -m "Set up project structure with sample files"
-        git push origin HEAD:${{ github.ref }}
+          ### Update user
+          - Method: PUT
+          - Endpoint: /api/users/:id
+          - Headers: x-auth-token (JWT token)
+          - Body: { name, email, password }
+
+          ### Delete user
+          - Method: DELETE
+          - Endpoint: /api/users/:id
+          - Headers: x-auth-token (JWT token)" > docs/API.md
+
+      # Install project dependencies
+      - name: Install dependencies
+        run: |
+          npm init -y
+          npm install express mongoose bcrypt jsonwebtoken joi helmet cors morgan
+          npm install --save-dev nodemon jest supertest
+
+      # Add and commit changes to the repository
+      - name: Commit changes
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add .
+
+          # Commit changes if there are any
+          git diff --quiet || git commit -m "Set up project structure with sample files"
+          git push origin HEAD:${{ github.ref }}
